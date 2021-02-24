@@ -48,15 +48,6 @@ $ENV{'PATH'} = '/usr/local/bin:/usr/bin:/usr/sbin:/bin:/sbin:/opt/csw/bin';
 
 $ENV{'GNUPGHOME'} = "$AMANDA_HOME/.gnupg";
 
-sub do_gpg_agent() {
-    my $path=`which gpg-agent 2>/dev/null`;
-    chomp $path;
-    if (-x $path) {
-	return "gpg-agent --daemon --";
-    }
-    return ""
-}
-
 sub which_gpg() {
     my $path=`which gpg2 2>/dev/null`;
     if (!$path) {
@@ -70,17 +61,13 @@ sub which_gpg() {
 }
 
 sub encrypt() {
-    my $gpg_agent_cmd = do_gpg_agent();
     my $gpg = which_gpg();
-    system "$gpg_agent_cmd $gpg  --batch --disable-mdc --encrypt --cipher-algo AES256 --recipient $AMANDA";
-    sleep(2); # allow gpg-agent the time to exit
+    system "$gpg --batch --disable-mdc --encrypt --cipher-algo AES256 --recipient $AMANDA";
 }
 
 sub decrypt() {
-    my $gpg_agent_cmd = do_gpg_agent();
     my $gpg = which_gpg();
-    system "$gpg_agent_cmd $gpg --batch --quiet --no-mdc-warning --secret-keyring $AM_PRIV --decrypt --passphrase-fd 3  3<$AM_PASS";
-    sleep(2); # allow gpg-agent the time to exit
+    system "$gpg --batch --quiet --no-mdc-warning --secret-keyring $AM_PRIV --decrypt --passphrase-fd 3  3<$AM_PASS";
 }
 
 sub my_sig_catcher {
